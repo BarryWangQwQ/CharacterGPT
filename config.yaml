@@ -1,0 +1,5 @@
+character: Character
+openai_key: API_KEY
+traceback_length: 5
+vector_space_model: sentence-transformers/distiluse-base-multilingual-cased-v2
+api: True
