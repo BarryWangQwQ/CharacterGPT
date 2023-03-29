@@ -19,7 +19,24 @@ warnings.filterwarnings("ignore")
 with open('config.yaml', 'r', encoding='utf-8') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
-pprint(config)
+
+def print_log(text: str):
+    print(
+        '[{0}] {1}'.format(
+            time.strftime(
+                '%Y-%m-%d %H:%M:%S',
+                time.localtime(time.time())
+            ), text
+        )
+    )
+
+
+def print_character_config():
+    print_log('Loading character config...')
+    pprint(config)
+
+
+print_character_config()
 
 mb = MemoryBlocks(
     length=config['traceback_length'],
@@ -32,11 +49,15 @@ character_name = config['character']
 title = f"Chat - {character_name}"
 
 prompt_default = ""
+frame_value = []
 
 if os.path.exists(character_name):
     mb.load(character_name)
     with open(os.path.join(character_name, 'prompts'), 'r', encoding='utf-8') as f:
         prompt_default = f.read()
+    for r in mb.info():
+        raw = eval(r['raw'])
+        frame_value.append([raw[0]['content'], raw[1]['content']])
 
 messages = [{"role": "system", "content": prompt_default}]
 
@@ -66,7 +87,9 @@ with gr.Blocks(title=title) as demo:
             headers=["用户", "角色"],
             datatype=["str", "str"],
             col_count=(2, "fixed"),
+            max_rows=9999999999,  # -> +INF
             type='array',
+            value=frame_value,
             interactive=True
         )
         with gr.Row():
@@ -137,7 +160,7 @@ with gr.Blocks(title=title) as demo:
         global messages
         messages = [{"role": "system", "content": prompt_default}]
         mb.reset()
-        print("已重置模型")
+        print_log('Reset Model.')
         return [[None, "已重置模型"]]
 
 
@@ -177,6 +200,8 @@ with gr.Blocks(title=title) as demo:
         if not database:
             database = [['', '']]
 
+        print_log('Update memory block.')
+
         return '[{0}] 已更新记忆区块'.format(
             time.strftime(
                 '%Y-%m-%d %H:%M:%S',
@@ -190,6 +215,8 @@ with gr.Blocks(title=title) as demo:
 
         with open(os.path.join(character_name, 'prompts'), 'w+', encoding='utf-8') as f:
             f.write(prompts)
+
+        print_log('Export character.')
 
         return '[{0}] 已导出角色记忆模型'.format(
             time.strftime(
@@ -211,5 +238,11 @@ with gr.Blocks(title=title) as demo:
     update.click(update_example, dataframe, [system_log, dataframe], queue=False, api_name='update')
     save.click(save_model, prompt, system_log, queue=False, api_name='save')
 
-if __name__ == "__main__":
+
+def launch_demo():
+    print_log('Launching DEMO..')
     demo.launch(show_api=config['character'])
+
+
+if __name__ == "__main__":
+    launch_demo()

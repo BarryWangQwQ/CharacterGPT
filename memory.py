@@ -3,10 +3,21 @@
 # @Author  : BarryWang
 # @FileName: memory.py
 # @Github  : https://github.com/BarryWangQwQ
-
+import time
 import uuid
 
 from txtai.embeddings import Embeddings
+
+
+def print_log(text: str):
+    print(
+        '[{0}] {1}'.format(
+            time.strftime(
+                '%Y-%m-%d %H:%M:%S',
+                time.localtime(time.time())
+            ), text
+        )
+    )
 
 
 class Dialogue:
@@ -42,7 +53,7 @@ class MemoryBlocks:
                 'content': True
             }
         )
-        print('Analog memory block already loaded')
+        print_log('Analog memory block already loaded.')
 
     def upsert(self, dialogue_list):
         self.embeddings.upsert(
@@ -58,7 +69,7 @@ class MemoryBlocks:
         )
         for r in results:
             neighborhoods += eval(r['raw'])
-        return neighborhoods
+        return list(reversed(neighborhoods))
 
     def reset(self):
         self.embeddings.close()
@@ -75,13 +86,7 @@ class MemoryBlocks:
     def load(self, load_path):
         self.embeddings.load(load_path)
 
-    def exists(self, ):
-        self.embeddings.search(
-            "SELECT raw FROM txtai"
-        )
-        return 0
-
     def info(self):
         return self.embeddings.search(
-            "SELECT raw FROM txtai"
+            "SELECT raw FROM txtai limit 9999999999"
         )
