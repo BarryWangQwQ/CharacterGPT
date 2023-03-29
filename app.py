@@ -49,9 +49,10 @@ character_name = config['character']
 title = f"Chat - {character_name}"
 
 prompt_default = ""
-frame_value = []
+frame_value = None
 
 if os.path.exists(character_name):
+    frame_value = []
     mb.load(character_name)
     with open(os.path.join(character_name, 'prompts'), 'r', encoding='utf-8') as f:
         prompt_default = f.read()
